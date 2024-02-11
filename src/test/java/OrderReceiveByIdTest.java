@@ -15,7 +15,7 @@ public class OrderReceiveByIdTest {
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
+        RestAssured.baseURI = URL.HOST;
     }
 
     @Test
@@ -75,7 +75,7 @@ public class OrderReceiveByIdTest {
     }
     @After
     public void orderDeletion() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = URL.HOST;
         // Отправляем DELETE-запрос на удаление курьера
         given()
                 .header("Content-type", "application/json")

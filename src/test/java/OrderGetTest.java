@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 public class OrderGetTest {
     @Before
     public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
+        RestAssured.baseURI = URL.HOST;
     }
 
     @Test

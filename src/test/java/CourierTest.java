@@ -1,3 +1,4 @@
+import com.github.jsonzou.jmockdata.JMockData;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -6,22 +7,26 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpHeaders.HOST;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 public class CourierTest {
     private int idCourier;
+    CreateCourier createCourier = new CreateCourier(JMockData.mock(String.class),JMockData.mock(String.class),JMockData.mock(String.class));
+    LoginCourier loginCourier = new LoginCourier(JMockData.mock(String.class), JMockData.mock(String.class));
+    CreateBadCourier createBadCourier = new CreateBadCourier(JMockData.mock(String.class));
+    LoginCourier loginCourier4 = new LoginCourier(JMockData.mock(String.class), JMockData.mock(String.class));
+    LoginCourier loginCourier5 = new LoginCourier(JMockData.mock(String.class), "");
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
+        RestAssured.baseURI = URL.HOST;
     }
 
     @Test
     @DisplayName("Check creation courier and check status")
     public void testCourierCreationAndChekingStatus() {
-        CreateCourier createCourier = new CreateCourier("Log1","12345","Ivan");
-        LoginCourier loginCourier = new LoginCourier("Log1", "12345");
         Response response =
                 given()
                         .header("Content-type", "application/json") // заполни header
@@ -36,20 +41,18 @@ public class CourierTest {
                 given()
                         .header("Content-type", "application/json") // заполни header
                         .and()
-                        .body(loginCourier) // заполни body
+                        .body(createCourier) // заполни body
                         .when()
                         .post("api/v1/courier/login"); // отправь запрос на ручку
         response2.then().assertThat().statusCode(200)
                 .and()
                 .body("id", notNullValue());
         idCourier = response2.jsonPath().getInt("id");
+        System.out.println(createCourier);
     }
     @Test
     @DisplayName("Check don't creation two same courier and check status")
     public void testCantCreateTwoSameCouriers() {
-        CreateCourier createCourier = new CreateCourier("Log2","12345","Ivan");
-        CreateCourier createCourier2 = new CreateCourier("Log2","12345","Ivan");
-        LoginCourier loginCourier = new LoginCourier("Log2", "12345");
         Response response =
                 given()
                         .header("Content-type", "application/json") // заполни header
@@ -64,7 +67,7 @@ public class CourierTest {
                 given()
                         .header("Content-type", "application/json") // заполни header
                         .and()
-                        .body(loginCourier) // заполни body
+                        .body(createCourier) // заполни body
                         .when()
                         .post("api/v1/courier/login"); // отправь запрос на ручку
         response2.then().assertThat().statusCode(200)
@@ -75,17 +78,17 @@ public class CourierTest {
                 given()
                         .header("Content-type", "application/json") // заполни header
                         .and()
-                        .body(createCourier2) // заполни body
+                        .body(createCourier) // заполни body
                         .when()
                         .post("/api/v1/courier"); // отправь запрос на ручку
         response3.then().assertThat().statusCode(409)
                 .and()
                 .body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
+        System.out.println(createCourier);
     }
     @Test
     @DisplayName("Check bad creation courier and check status")
     public void testCreateBadCourierAndChekingStatus() {
-        CreateBadCourier createBadCourier = new CreateBadCourier("Log3");
         Response response =
                 given()
                         .header("Content-type", "application/json") // заполни header
@@ -96,40 +99,41 @@ public class CourierTest {
         response.then().assertThat().statusCode(400)
                 .and()
                 .body("message",equalTo("Недостаточно данных для создания учетной записи"));
+        System.out.println(createCourier);
     }
     @Test
     @DisplayName("Check getting doesn't exist login courier and check status")
     public void testLoginDoesntExistsCourierAndChekingStatus() {
-        LoginCourier loginCourier = new LoginCourier("Log44", "12345");
         Response response =
                 given()
                         .header("Content-type", "application/json") // заполни header
                         .and()
-                        .body(loginCourier) // заполни body
+                        .body(loginCourier4) // заполни body
                         .when()
                         .post("api/v1/courier/login"); // отправь запрос на ручку
         response.then().assertThat().statusCode(404)
                 .and()
                 .body("message",equalTo("Учетная запись не найдена"));
+        System.out.println(loginCourier);
     }
     @Test
     @DisplayName("Check getting login couierier without param and check status")
     public void testLoginDoesntHaveParamCourierAndChekingStatus() {
-        LoginCourier loginCourier = new LoginCourier("Log5", "");
         Response response =
                 given()
                         .header("Content-type", "application/json") // заполни header
                         .and()
-                        .body(loginCourier) // заполни body
+                        .body(loginCourier5) // заполни body
                         .when()
                         .post("api/v1/courier/login"); // отправь запрос на ручку
         response.then().assertThat().statusCode(400)
                 .and()
                 .body("message",equalTo("Недостаточно данных для входа"));
+        System.out.println(loginCourier);
     }
     @After
     public void courierDeletion() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = URL.HOST;
         // Отправляем DELETE-запрос на удаление курьера
         given()
                 .header("Content-type", "application/json")

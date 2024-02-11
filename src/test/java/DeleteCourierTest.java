@@ -1,3 +1,4 @@
+import com.github.jsonzou.jmockdata.JMockData;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -10,15 +11,15 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class DeleteCourierTest {
     private int idCourier;
+    CreateCourier createCourier = new CreateCourier(JMockData.mock(String.class),JMockData.mock(String.class),JMockData.mock(String.class));
+    LoginCourier loginCourier = new LoginCourier(JMockData.mock(String.class), JMockData.mock(String.class));
     @Before
     public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
+        RestAssured.baseURI = URL.HOST;
     }
     @Test
     @DisplayName("Check delete exists courier ans check status")
     public void testGoodDeleteCourierAndCheckingStatus() {
-        CreateCourier createCourier = new CreateCourier("Dell1","12345","Ivan");
-        LoginCourier loginCourier = new LoginCourier("Dell1", "12345");
         Response response =
                 given()
                         .header("Content-type", "application/json") // заполни header
@@ -33,7 +34,7 @@ public class DeleteCourierTest {
                 given()
                         .header("Content-type", "application/json") // заполни header
                         .and()
-                        .body(loginCourier) // заполни body
+                        .body(createCourier) // заполни body
                         .when()
                         .post("api/v1/courier/login"); // отправь запрос на ручку
         response2.then().assertThat().statusCode(200)
